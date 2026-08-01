@@ -36,6 +36,10 @@ const envSchema = z.object({
 
   CLICK_BUFFER_ENABLED: booleanFromEnv(true),
 
+  CLICK_FLUSH_ENABLED: booleanFromEnv(true),
+
+  CLICK_FLUSH_INTERVAL_MS: z.coerce.number().int().min(1_000).default(10_000),
+
   CACHE_TTL_SECONDS: z.coerce.number().int().min(1).default(86_400),
 
   NEGATIVE_CACHE_TTL_SECONDS: z.coerce.number().int().min(1).default(60),

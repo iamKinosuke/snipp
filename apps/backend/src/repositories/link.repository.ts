@@ -31,6 +31,30 @@ export interface RecordClickData {
   referrer: string;
 }
 
+export interface ClickCountDelta {
+  linkId: number;
+  delta: number;
+}
+
+export interface BufferedClickRow {
+  linkId: number;
+  createdAt: Date;
+  device: Device;
+  browser: string;
+  referrer: string;
+}
+
+export interface ClickBatch {
+  counts: ClickCountDelta[];
+  clicks: BufferedClickRow[];
+}
+
+export interface ClickBatchResult {
+  countsApplied: number;
+  clicksInserted: number;
+  droppedLinkIds: number[];
+}
+
 export interface DailyClickRow {
   date: string;
   clicks: number;
@@ -58,6 +82,8 @@ export interface LinkRepository {
   findRedirectTarget(shortCode: string): Promise<RedirectTarget | null>;
   incrementClickCount(id: number): Promise<void>;
   recordClick(data: RecordClickData): Promise<void>;
+
+  applyClickBatch(batch: ClickBatch): Promise<ClickBatchResult>;
 
   listByUser(
     userId: number,
@@ -90,6 +116,19 @@ function toNumber(value: unknown): number {
   if (typeof value === "bigint") return Number(value);
   if (typeof value === "number") return value;
   return Number(value ?? 0);
+}
+
+const COUNT_CHUNK_SIZE = 500;
+const CLICK_CHUNK_SIZE = 1_000;
+
+const CLICK_BATCH_TIMEOUT_MS = 30_000;
+
+function chunk<T>(items: readonly T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
 }
 
 export function createLinkRepository(client: PrismaClient): LinkRepository {
@@ -141,6 +180,71 @@ export function createLinkRepository(client: PrismaClient): LinkRepository {
           referrer: data.referrer,
         },
       });
+    },
+
+    async applyClickBatch(batch) {
+      const empty: ClickBatchResult = {
+        countsApplied: 0,
+        clicksInserted: 0,
+        droppedLinkIds: [],
+      };
+
+      const referenced = new Set<number>();
+      for (const entry of batch.counts) referenced.add(entry.linkId);
+      for (const click of batch.clicks) referenced.add(click.linkId);
+      if (referenced.size === 0) return empty;
+
+      const alive = new Set(
+        (
+          await client.link.findMany({
+            where: { id: { in: [...referenced] } },
+            select: { id: true },
+          })
+        ).map((row) => row.id),
+      );
+
+      const droppedLinkIds = [...referenced].filter((id) => !alive.has(id));
+
+      const counts = batch.counts.filter(
+        (entry) => entry.delta > 0 && alive.has(entry.linkId),
+      );
+      const clicks = batch.clicks.filter((click) => alive.has(click.linkId));
+
+      if (counts.length === 0 && clicks.length === 0) {
+        return { ...empty, droppedLinkIds };
+      }
+
+      await client.$transaction(
+        async (tx) => {
+          for (const part of chunk(counts, COUNT_CHUNK_SIZE)) {
+            const cases = Prisma.join(
+              part.map(
+                (entry) =>
+                  Prisma.sql`WHEN ${entry.linkId} THEN click_count + ${entry.delta}`,
+              ),
+              " ",
+            );
+            const ids = Prisma.join(part.map((entry) => entry.linkId));
+
+            await tx.$executeRaw`
+              UPDATE links
+              SET click_count = CASE id ${cases} ELSE click_count END
+              WHERE id IN (${ids})
+            `;
+          }
+
+          for (const part of chunk(clicks, CLICK_CHUNK_SIZE)) {
+            await tx.click.createMany({ data: part });
+          }
+        },
+        { timeout: CLICK_BATCH_TIMEOUT_MS },
+      );
+
+      return {
+        countsApplied: counts.length,
+        clicksInserted: clicks.length,
+        droppedLinkIds,
+      };
     },
 
     async listByUser(userId, offset, limit) {
