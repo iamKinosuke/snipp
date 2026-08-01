@@ -16,12 +16,9 @@
     "dev:frontend": "npm run dev --workspace=@snipp/frontend",
     "build": "npm run build --workspace=@snipp/backend && npm run build --workspace=@snipp/frontend",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "services": "./scripts/dev-services.sh",
-    "bench": "node scripts/bench-redirect.mjs"
+    "lint": "npm run lint --workspaces --if-present"
   },
   "devDependencies": {
-    "autocannon": "^8.0.0",
     "concurrently": "^9.2.1"
   }
 }
