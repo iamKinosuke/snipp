@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# build output
+dist/
+.next/
+out/
+build/
+
+# env files - never commit real credentials, only .env.example
+.env
+.env.*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# logs
+*.log
+npm-debug.log*
+logs/
+
+# editor / OS
+.DS_Store
+.idea/
+*.swp
+
+# test coverage
+coverage/
+
+# deploy
+.vercel
+*.pem
