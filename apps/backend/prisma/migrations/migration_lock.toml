@@ -1,0 +1,2 @@
+# Prisma uses this file to keep migrations from running against another provider.
+provider = "mysql"
