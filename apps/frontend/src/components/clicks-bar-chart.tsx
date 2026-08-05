@@ -4,13 +4,21 @@ import { cn } from "@/lib/utils";
 
 const NICE_STEPS = [1, 1.5, 2, 3, 4, 5, 6, 8, 10] as const;
 
+const EDGE_CLAMP_MIN_COLUMNS = 10;
+
 const TOOLTIP_ALIGN = {
   start: "left-0",
   center: "left-1/2 -translate-x-1/2",
   end: "right-0",
 } as const;
 
-type TooltipAlign = keyof typeof TOOLTIP_ALIGN;
+const LABEL_ALIGN = {
+  start: "text-left",
+  center: "text-center",
+  end: "text-right",
+} as const;
+
+type EdgeAlign = keyof typeof TOOLTIP_ALIGN;
 
 function niceMax(max: number): number {
   if (max <= 4) return 4;
@@ -29,7 +37,9 @@ function shouldLabel(index: number, count: number): boolean {
   return fromEnd % 5 === 0;
 }
 
-function tooltipAlign(index: number, count: number): TooltipAlign {
+function edgeAlign(index: number, count: number): EdgeAlign {
+  if (count < EDGE_CLAMP_MIN_COLUMNS) return "center";
+
   const center = (index + 0.5) / count;
 
   if (center < 0.15) return "start";
@@ -45,7 +55,7 @@ export function ClicksBarChart({ daily }: { daily: DailyClicks[] }) {
   return (
     <figure className="flex flex-col gap-4 overflow-x-clip">
       <div className="flex gap-3">
-        <div className="text-muted-foreground text-2xs flex h-48 w-10 shrink-0 flex-col justify-between text-right tabular-nums">
+        <div className="text-muted-foreground text-2xs flex h-48 w-12 shrink-0 flex-col justify-between text-right tabular-nums">
           {ticks.map((tick) => (
             <span key={tick} className="leading-none whitespace-nowrap">
               {formatNumber(tick)}
@@ -70,7 +80,7 @@ export function ClicksBarChart({ daily }: { daily: DailyClicks[] }) {
                   key={day.date}
                   day={day}
                   axisMax={axisMax}
-                  align={tooltipAlign(index, daily.length)}
+                  align={edgeAlign(index, daily.length)}
                 />
               ))}
             </ol>
@@ -80,7 +90,10 @@ export function ClicksBarChart({ daily }: { daily: DailyClicks[] }) {
             {daily.map((day, index) => (
               <span
                 key={day.date}
-                className="text-muted-foreground text-2xs min-w-0 flex-1 truncate text-center"
+                className={cn(
+                  "text-muted-foreground text-2xs min-w-0 flex-1 whitespace-nowrap",
+                  LABEL_ALIGN[edgeAlign(index, daily.length)],
+                )}
               >
                 {shouldLabel(index, daily.length) ? formatDayShort(day.date) : ""}
               </span>
@@ -89,23 +102,25 @@ export function ClicksBarChart({ daily }: { daily: DailyClicks[] }) {
         </div>
       </div>
 
-      <table className="sr-only">
-        <caption>Clicks per day</caption>
-        <thead>
-          <tr>
-            <th scope="col">Date</th>
-            <th scope="col">Clicks</th>
-          </tr>
-        </thead>
-        <tbody>
-          {daily.map((day) => (
-            <tr key={day.date}>
-              <th scope="row">{formatDate(day.date)}</th>
-              <td>{formatNumber(day.clicks)}</td>
+      <div className="sr-only">
+        <table>
+          <caption>Clicks per day</caption>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Clicks</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {daily.map((day) => (
+              <tr key={day.date}>
+                <th scope="row">{formatDate(day.date)}</th>
+                <td>{formatNumber(day.clicks)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }
@@ -117,7 +132,7 @@ function ChartColumn({
 }: {
   day: DailyClicks;
   axisMax: number;
-  align: TooltipAlign;
+  align: EdgeAlign;
 }) {
   const heightPercent = axisMax === 0 ? 0 : (day.clicks / axisMax) * 100;
 
