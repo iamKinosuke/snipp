@@ -33,8 +33,9 @@ model Link {
 
   createdAt DateTime @default(now()) @map("created_at")
 
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clicks Click[]
+  user       User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clicks     Click[]
+  clickDaily ClickDaily[]
 
   @@index([userId, createdAt])
   @@index([expiresAt])
@@ -56,4 +57,21 @@ model Click {
 
   @@index([linkId, createdAt])
   @@map("clicks")
+}
+
+model ClickDaily {
+  linkId Int @map("link_id")
+
+  dimension String @db.VarChar(16)
+
+  date DateTime @db.Date
+
+  value String @db.VarChar(255)
+
+  clicks Int @default(0)
+
+  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@id([linkId, dimension, date, value])
+  @@map("click_daily")
 }

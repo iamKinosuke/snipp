@@ -70,10 +70,19 @@ export interface StatsWindow {
   to: Date;
 }
 
+export type BreakdownDimension = "device" | "browser" | "referrer";
+
 export class DuplicateShortCodeError extends Error {
   constructor(readonly shortCode: string) {
     super(`short_code already exists: ${shortCode}`);
     this.name = "DuplicateShortCodeError";
+  }
+}
+
+export class UnknownUserError extends Error {
+  constructor(readonly userId: number) {
+    super(`user does not exist: ${userId}`);
+    this.name = "UnknownUserError";
   }
 }
 
@@ -99,7 +108,7 @@ export interface LinkRepository {
   countClicksInWindow(linkId: number, window: StatsWindow): Promise<number>;
   dailyClicks(linkId: number, window: StatsWindow): Promise<DailyClickRow[]>;
   breakdownBy(
-    column: "referrer" | "device",
+    column: BreakdownDimension,
     linkId: number,
     window: StatsWindow,
   ): Promise<BreakdownRow[]>;
@@ -112,16 +121,21 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
-function toNumber(value: unknown): number {
-  if (typeof value === "bigint") return Number(value);
-  if (typeof value === "number") return value;
-  return Number(value ?? 0);
+function isForeignKeyViolation(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2003"
+  );
 }
 
 const COUNT_CHUNK_SIZE = 500;
 const CLICK_CHUNK_SIZE = 1_000;
+const ROLLUP_CHUNK_SIZE = 500;
 
 const CLICK_BATCH_TIMEOUT_MS = 30_000;
+
+const TOTAL_DIMENSION = "total";
+const TOTAL_VALUE = "";
 
 function chunk<T>(items: readonly T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -129,6 +143,72 @@ function chunk<T>(items: readonly T[], size: number): T[][] {
     chunks.push(items.slice(i, i + size));
   }
   return chunks;
+}
+
+interface RollupRow {
+  linkId: number;
+  dimension: string;
+  date: string;
+  value: string;
+  clicks: number;
+}
+
+function utcDateKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function rollUp(clicks: readonly BufferedClickRow[]): RollupRow[] {
+  const rows = new Map<string, RollupRow>();
+
+  function bump(
+    linkId: number,
+    dimension: string,
+    date: string,
+    value: string,
+  ): void {
+    const key = `${String(linkId)}|${dimension}|${date}|${value}`;
+    const existing = rows.get(key);
+
+    if (existing !== undefined) {
+      existing.clicks += 1;
+      return;
+    }
+
+    rows.set(key, { linkId, dimension, date, value, clicks: 1 });
+  }
+
+  for (const click of clicks) {
+    const date = utcDateKey(click.createdAt);
+
+    bump(click.linkId, TOTAL_DIMENSION, date, TOTAL_VALUE);
+    bump(click.linkId, "device", date, click.device);
+    bump(click.linkId, "browser", date, click.browser);
+    bump(click.linkId, "referrer", date, click.referrer);
+  }
+
+  return [...rows.values()];
+}
+
+type RawExecutor = Pick<PrismaClient, "$executeRaw">;
+
+async function upsertRollup(
+  tx: RawExecutor,
+  rows: readonly RollupRow[],
+): Promise<void> {
+  for (const part of chunk(rows, ROLLUP_CHUNK_SIZE)) {
+    const values = Prisma.join(
+      part.map(
+        (row) =>
+          Prisma.sql`(${row.linkId}, ${row.dimension}, ${row.date}, ${row.value}, ${row.clicks})`,
+      ),
+    );
+
+    await tx.$executeRaw`
+      INSERT INTO click_daily (link_id, dimension, date, value, clicks)
+      VALUES ${values}
+      ON DUPLICATE KEY UPDATE clicks = clicks + VALUES(clicks)
+    `;
+  }
 }
 
 export function createLinkRepository(client: PrismaClient): LinkRepository {
@@ -146,6 +226,9 @@ export function createLinkRepository(client: PrismaClient): LinkRepository {
       } catch (error) {
         if (isUniqueViolation(error)) {
           throw new DuplicateShortCodeError(data.shortCode);
+        }
+        if (data.userId !== null && isForeignKeyViolation(error)) {
+          throw new UnknownUserError(data.userId);
         }
         throw error;
       }
@@ -172,13 +255,20 @@ export function createLinkRepository(client: PrismaClient): LinkRepository {
     },
 
     async recordClick(data) {
-      await client.click.create({
-        data: {
-          linkId: data.linkId,
-          device: data.device,
-          browser: data.browser,
-          referrer: data.referrer,
-        },
+      const createdAt = new Date();
+
+      await client.$transaction(async (tx) => {
+        await tx.click.create({
+          data: {
+            linkId: data.linkId,
+            createdAt,
+            device: data.device,
+            browser: data.browser,
+            referrer: data.referrer,
+          },
+        });
+
+        await upsertRollup(tx, rollUp([{ ...data, createdAt }]));
       });
     },
 
@@ -236,6 +326,8 @@ export function createLinkRepository(client: PrismaClient): LinkRepository {
           for (const part of chunk(clicks, CLICK_CHUNK_SIZE)) {
             await tx.click.createMany({ data: part });
           }
+
+          await upsertRollup(tx, rollUp(clicks));
         },
         { timeout: CLICK_BATCH_TIMEOUT_MS },
       );
@@ -276,45 +368,50 @@ export function createLinkRepository(client: PrismaClient): LinkRepository {
     },
 
     async countClicksInWindow(linkId, window) {
-      return await client.click.count({
+      const result = await client.clickDaily.aggregate({
         where: {
           linkId,
-          createdAt: { gte: window.from, lt: window.to },
+          dimension: TOTAL_DIMENSION,
+          date: { gte: window.from, lt: window.to },
         },
+        _sum: { clicks: true },
       });
+
+      return result._sum.clicks ?? 0;
     },
 
     async dailyClicks(linkId, window) {
-      const rows = await client.$queryRaw<{ date: string; clicks: bigint }[]>`
-        SELECT DATE_FORMAT(created_at, '%Y-%m-%d') AS date, COUNT(*) AS clicks
-        FROM clicks
-        WHERE link_id = ${linkId}
-          AND created_at >= ${window.from}
-          AND created_at < ${window.to}
-        GROUP BY date
-        ORDER BY date ASC
-      `;
+      const rows = await client.clickDaily.findMany({
+        where: {
+          linkId,
+          dimension: TOTAL_DIMENSION,
+          date: { gte: window.from, lt: window.to },
+        },
+        select: { date: true, clicks: true },
+        orderBy: { date: "asc" },
+      });
 
       return rows.map((row) => ({
-        date: row.date,
-        clicks: toNumber(row.clicks),
+        date: utcDateKey(row.date),
+        clicks: row.clicks,
       }));
     },
 
     async breakdownBy(column, linkId, window) {
-      const rows = await client.click.groupBy({
-        by: [column],
+      const rows = await client.clickDaily.groupBy({
+        by: ["value"],
         where: {
           linkId,
-          createdAt: { gte: window.from, lt: window.to },
+          dimension: column,
+          date: { gte: window.from, lt: window.to },
         },
-        _count: { _all: true },
+        _sum: { clicks: true },
       });
 
       return rows
         .map((row) => ({
-          label: row[column] ?? "Unknown",
-          clicks: row._count._all,
+          label: row.value,
+          clicks: row._sum.clicks ?? 0,
         }))
         .sort((a, b) => b.clicks - a.clicks || a.label.localeCompare(b.label));
     },

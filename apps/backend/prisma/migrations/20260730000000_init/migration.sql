@@ -37,6 +37,18 @@ CREATE TABLE `clicks` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE `click_daily` (
+    `link_id` INTEGER NOT NULL,
+    `dimension` VARCHAR(16) NOT NULL,
+    `date` DATE NOT NULL,
+    `value` VARCHAR(255) NOT NULL,
+    `clicks` INTEGER NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (`link_id`, `dimension`, `date`, `value`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 ALTER TABLE `links` ADD CONSTRAINT `links_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `clicks` ADD CONSTRAINT `clicks_link_id_fkey` FOREIGN KEY (`link_id`) REFERENCES `links`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `click_daily` ADD CONSTRAINT `click_daily_link_id_fkey` FOREIGN KEY (`link_id`) REFERENCES `links`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
