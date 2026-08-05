@@ -87,7 +87,7 @@ export default async function LinkAnalyticsPage(
                 {link.shortCode}
               </h1>
               {summary.isExpired ? (
-                <span className="text-muted-foreground border-border shrink-0 rounded-sm border px-1.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">
+                <span className="text-muted-foreground border-border shrink-0 rounded-sm border px-1.5 py-0.5 text-2xs font-medium tracking-wide uppercase">
                   Expired
                 </span>
               ) : null}

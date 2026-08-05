@@ -1,6 +1,11 @@
 "use client";
 
-import { ArrowUpRightIcon, ClockIcon, QrCodeIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  ClockIcon,
+  HistoryIcon,
+  QrCodeIcon,
+} from "lucide-react";
 import { useState } from "react";
 
 import { CopyButton } from "@/components/copy-button";
@@ -9,7 +14,13 @@ import { Button } from "@/components/ui/button";
 import type { CreatedLink } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 
-export function ShortenResult({ link }: { link: CreatedLink }) {
+export function ShortenResult({
+  link,
+  reused = false,
+}: {
+  link: CreatedLink;
+  reused?: boolean;
+}) {
   const [qrOpen, setQrOpen] = useState(false);
 
   return (
@@ -43,6 +54,13 @@ export function ShortenResult({ link }: { link: CreatedLink }) {
           </Button>
         </div>
       </div>
+
+      {reused ? (
+        <div className="border-border text-muted-foreground flex items-center gap-1.5 border-t px-5 py-2.5 text-xs">
+          <HistoryIcon className="size-3.5 shrink-0" />
+          You had already shortened this URL — here is the same short link.
+        </div>
+      ) : null}
 
       {link.expiresAt !== null ? (
         <div className="border-border text-muted-foreground flex items-center gap-1.5 border-t px-5 py-2.5 text-xs">

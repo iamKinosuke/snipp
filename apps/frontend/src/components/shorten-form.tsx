@@ -19,7 +19,7 @@ import {
   ApiError,
   createLink,
   isUnauthorized,
-  type CreatedLink,
+  type CreateLinkResult,
 } from "@/lib/api";
 import { SHORT_DOMAIN_LABEL } from "@/lib/config";
 import {
@@ -42,7 +42,8 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
   const [optionsOpen, setOptionsOpen] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
-  const [latest, setLatest] = useState<CreatedLink | null>(null);
+  const [latest, setLatest] = useState<CreateLinkResult | null>(null);
+  const [reusedShortCode, setReusedShortCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const recent = useSyncExternalStore(
@@ -50,6 +51,11 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
     getRecentLinks,
     getServerRecentLinks,
   );
+
+  function handleClear() {
+    clearRecentLinks();
+    setReusedShortCode(null);
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,6 +75,8 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
         },
         session?.token,
       );
+
+      setReusedShortCode(created.reused ? created.shortCode : null);
 
       if (isSignedIn) {
         setLatest(created);
@@ -187,7 +195,7 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
       {isSignedIn ? (
         latest !== null ? (
           <div className="flex flex-col gap-2.5">
-            <ShortenResult link={latest} />
+            <ShortenResult link={latest} reused={latest.reused} />
             <Link
               href="/dashboard"
               className="text-primary focus-visible:outline-ring group inline-flex w-fit items-center gap-1.5 self-end rounded-sm text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-4"
@@ -198,7 +206,11 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
           </div>
         ) : null
       ) : (
-        <RecentLinks links={recent} onClear={clearRecentLinks} />
+        <RecentLinks
+          links={recent}
+          reusedShortCode={reusedShortCode}
+          onClear={handleClear}
+        />
       )}
     </div>
   );

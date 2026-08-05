@@ -13,6 +13,7 @@ CREATE TABLE `links` (
     -- COLLATE utf8mb4_bin: case-sensitive.
     `short_code` VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
     `target_url` VARCHAR(2048) NOT NULL,
+    `target_hash` CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
     `user_id` INTEGER NULL,
     `expires_at` DATETIME(3) NULL,
     `click_count` INTEGER NOT NULL DEFAULT 0,
@@ -20,6 +21,7 @@ CREATE TABLE `links` (
 
     UNIQUE INDEX `links_short_code_key`(`short_code`),
     INDEX `links_user_id_created_at_idx`(`user_id`, `created_at`),
+    INDEX `links_user_id_target_hash_idx`(`user_id`, `target_hash`),
     INDEX `links_expires_at_idx`(`expires_at`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

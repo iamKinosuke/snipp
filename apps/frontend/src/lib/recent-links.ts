@@ -106,11 +106,19 @@ export function getServerRecentLinks(): CreatedLink[] {
 }
 
 export function rememberRecentLink(link: CreatedLink): void {
+  const stored: CreatedLink = {
+    shortCode: link.shortCode,
+    shortUrl: link.shortUrl,
+    targetUrl: link.targetUrl,
+    expiresAt: link.expiresAt,
+    createdAt: link.createdAt,
+  };
+
   commit(
     [
-      link,
+      stored,
       ...getRecentLinks().filter(
-        (candidate) => candidate.shortCode !== link.shortCode,
+        (candidate) => candidate.shortCode !== stored.shortCode,
       ),
     ].slice(0, MAX_RECENT_LINKS),
   );

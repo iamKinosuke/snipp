@@ -12,6 +12,10 @@ export interface CreatedLink {
   createdAt: string;
 }
 
+export interface CreateLinkResult extends CreatedLink {
+  reused: boolean;
+}
+
 export interface CreateLinkPayload {
   url: string;
   alias?: string;
@@ -113,8 +117,8 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
 export async function createLink(
   payload: CreateLinkPayload,
   token?: string,
-): Promise<CreatedLink> {
-  return request<CreatedLink>("/api/links", {
+): Promise<CreateLinkResult> {
+  return request<CreateLinkResult>("/api/links", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

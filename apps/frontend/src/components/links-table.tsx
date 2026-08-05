@@ -81,7 +81,7 @@ function LinkTableRow({
             <ArrowUpRightIcon className="text-muted-foreground group-hover:text-primary size-3.5 shrink-0 transition-colors duration-150" />
           </a>
           {isExpired ? (
-            <span className="text-muted-foreground border-border shrink-0 rounded-sm border px-1.5 py-0.5 text-[11px] font-medium tracking-wide uppercase">
+            <span className="text-muted-foreground border-border shrink-0 rounded-sm border px-1.5 py-0.5 text-2xs font-medium tracking-wide uppercase">
               Expired
             </span>
           ) : null}

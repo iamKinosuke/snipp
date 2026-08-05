@@ -1,4 +1,5 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
+import { createHash } from "node:crypto";
 import type { Device } from "../utils/clickContext.js";
 
 export interface CreateLinkData {
@@ -88,6 +89,10 @@ export class UnknownUserError extends Error {
 
 export interface LinkRepository {
   create(data: CreateLinkData): Promise<LinkRecord>;
+  findReusableByTarget(
+    userId: number | null,
+    targetUrl: string,
+  ): Promise<LinkRecord | null>;
   findRedirectTarget(shortCode: string): Promise<RedirectTarget | null>;
   incrementClickCount(id: number): Promise<void>;
   recordClick(data: RecordClickData): Promise<void>;
@@ -119,6 +124,10 @@ function isUniqueViolation(error: unknown): boolean {
     error instanceof Prisma.PrismaClientKnownRequestError &&
     error.code === "P2002"
   );
+}
+
+function hashTarget(targetUrl: string): string {
+  return createHash("sha256").update(targetUrl).digest("hex");
 }
 
 function isForeignKeyViolation(error: unknown): boolean {
@@ -219,6 +228,7 @@ export function createLinkRepository(client: PrismaClient): LinkRepository {
           data: {
             shortCode: data.shortCode,
             targetUrl: data.targetUrl,
+            targetHash: hashTarget(data.targetUrl),
             userId: data.userId,
             expiresAt: data.expiresAt,
           },
@@ -232,6 +242,18 @@ export function createLinkRepository(client: PrismaClient): LinkRepository {
         }
         throw error;
       }
+    },
+
+    async findReusableByTarget(userId, targetUrl) {
+      return await client.link.findFirst({
+        where: {
+          userId,
+          targetHash: hashTarget(targetUrl),
+          targetUrl,
+          expiresAt: null,
+        },
+        orderBy: { id: "desc" },
+      });
     },
 
     async findRedirectTarget(shortCode) {

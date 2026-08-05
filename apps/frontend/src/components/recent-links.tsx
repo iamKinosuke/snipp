@@ -6,10 +6,15 @@ import { MAX_RECENT_LINKS } from "@/lib/recent-links";
 
 interface RecentLinksProps {
   links: readonly CreatedLink[];
+  reusedShortCode: string | null;
   onClear: () => void;
 }
 
-export function RecentLinks({ links, onClear }: RecentLinksProps) {
+export function RecentLinks({
+  links,
+  reusedShortCode,
+  onClear,
+}: RecentLinksProps) {
   if (links.length === 0) {
     return null;
   }
@@ -31,7 +36,11 @@ export function RecentLinks({ links, onClear }: RecentLinksProps) {
 
       <div className="flex flex-col gap-3">
         {links.map((link) => (
-          <ShortenResult key={link.shortCode} link={link} />
+          <ShortenResult
+            key={link.shortCode}
+            link={link}
+            reused={link.shortCode === reusedShortCode}
+          />
         ))}
       </div>
 

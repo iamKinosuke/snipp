@@ -53,6 +53,7 @@ export interface CreatedLink {
   targetUrl: string;
   expiresAt: string | null;
   createdAt: string;
+  reused: boolean;
 }
 
 export interface LinksPage {
@@ -117,6 +118,24 @@ export function createLinkService(deps: LinkServiceDeps): LinkService {
     };
   }
 
+  function toCreated(link: LinkRecord, reused: boolean): CreatedLink {
+    const summary = toSummary(link);
+
+    return {
+      shortCode: summary.shortCode,
+      shortUrl: summary.shortUrl,
+      targetUrl: summary.targetUrl,
+      expiresAt: summary.expiresAt,
+      createdAt: summary.createdAt,
+      reused,
+    };
+  }
+
+  async function toFreshlyCreated(link: LinkRecord): Promise<CreatedLink> {
+    await cache.invalidate(link.shortCode);
+    return toCreated(link, false);
+  }
+
   return {
     async createLink(input) {
       const urlResult = validateUrl(input.url, { blockedHosts });
@@ -141,6 +160,17 @@ export function createLinkService(deps: LinkServiceDeps): LinkService {
       const userId = input.userId ?? null;
       const targetUrl = urlResult.url;
 
+      if (input.alias === undefined && expiresAt === null) {
+        const existing = await deps.repository.findReusableByTarget(
+          userId,
+          targetUrl,
+        );
+
+        if (existing !== null) {
+          return toCreated(existing, true);
+        }
+      }
+
       if (input.alias !== undefined) {
         const aliasResult = validateAlias(input.alias);
         if (!aliasResult.ok) {
@@ -154,7 +184,7 @@ export function createLinkService(deps: LinkServiceDeps): LinkService {
             userId,
             expiresAt,
           });
-          return await toCreated(link);
+          return await toFreshlyCreated(link);
         } catch (error) {
           if (error instanceof DuplicateShortCodeError) {
             throw conflict(
@@ -177,7 +207,7 @@ export function createLinkService(deps: LinkServiceDeps): LinkService {
             userId,
             expiresAt,
           });
-          return await toCreated(link);
+          return await toFreshlyCreated(link);
         } catch (error) {
           if (error instanceof DuplicateShortCodeError) {
             continue;
@@ -194,19 +224,6 @@ export function createLinkService(deps: LinkServiceDeps): LinkService {
         "CODE_GENERATION_FAILED",
         "Could not generate a short code. Please try again.",
       );
-
-      async function toCreated(link: LinkRecord): Promise<CreatedLink> {
-        await cache.invalidate(link.shortCode);
-
-        const summary = toSummary(link);
-        return {
-          shortCode: summary.shortCode,
-          shortUrl: summary.shortUrl,
-          targetUrl: summary.targetUrl,
-          expiresAt: summary.expiresAt,
-          createdAt: summary.createdAt,
-        };
-      }
     },
 
     async resolveForRedirect(shortCode) {

@@ -25,6 +25,8 @@ model Link {
 
   targetUrl String @map("target_url") @db.VarChar(2048)
 
+  targetHash String @map("target_hash") @db.Char(64)
+
   userId Int? @map("user_id")
 
   expiresAt DateTime? @map("expires_at")
@@ -38,6 +40,7 @@ model Link {
   clickDaily ClickDaily[]
 
   @@index([userId, createdAt])
+  @@index([userId, targetHash])
   @@index([expiresAt])
   @@map("links")
 }

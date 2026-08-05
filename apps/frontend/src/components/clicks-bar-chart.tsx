@@ -1,7 +1,16 @@
 import type { DailyClicks } from "@/lib/api";
 import { formatDate, formatDayShort, formatNumber } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const NICE_STEPS = [1, 1.5, 2, 3, 4, 5, 6, 8, 10] as const;
+
+const TOOLTIP_ALIGN = {
+  start: "left-0",
+  center: "left-1/2 -translate-x-1/2",
+  end: "right-0",
+} as const;
+
+type TooltipAlign = keyof typeof TOOLTIP_ALIGN;
 
 function niceMax(max: number): number {
   if (max <= 4) return 4;
@@ -20,15 +29,23 @@ function shouldLabel(index: number, count: number): boolean {
   return fromEnd % 5 === 0;
 }
 
+function tooltipAlign(index: number, count: number): TooltipAlign {
+  const center = (index + 0.5) / count;
+
+  if (center < 0.15) return "start";
+  if (center > 0.85) return "end";
+  return "center";
+}
+
 export function ClicksBarChart({ daily }: { daily: DailyClicks[] }) {
   const peak = Math.max(...daily.map((day) => day.clicks), 0);
   const axisMax = niceMax(peak);
   const ticks = [axisMax, axisMax / 2, 0];
 
   return (
-    <figure className="flex flex-col gap-4">
+    <figure className="flex flex-col gap-4 overflow-x-clip">
       <div className="flex gap-3">
-        <div className="text-muted-foreground flex h-48 w-10 shrink-0 flex-col justify-between text-right text-[11px] tabular-nums">
+        <div className="text-muted-foreground text-2xs flex h-48 w-10 shrink-0 flex-col justify-between text-right tabular-nums">
           {ticks.map((tick) => (
             <span key={tick} className="leading-none whitespace-nowrap">
               {formatNumber(tick)}
@@ -48,8 +65,13 @@ export function ClicksBarChart({ daily }: { daily: DailyClicks[] }) {
             ))}
 
             <ol className="absolute inset-0 flex items-end gap-0.5">
-              {daily.map((day) => (
-                <ChartColumn key={day.date} day={day} axisMax={axisMax} />
+              {daily.map((day, index) => (
+                <ChartColumn
+                  key={day.date}
+                  day={day}
+                  axisMax={axisMax}
+                  align={tooltipAlign(index, daily.length)}
+                />
               ))}
             </ol>
           </div>
@@ -58,7 +80,7 @@ export function ClicksBarChart({ daily }: { daily: DailyClicks[] }) {
             {daily.map((day, index) => (
               <span
                 key={day.date}
-                className="text-muted-foreground min-w-0 flex-1 truncate text-center text-[11px]"
+                className="text-muted-foreground text-2xs min-w-0 flex-1 truncate text-center"
               >
                 {shouldLabel(index, daily.length) ? formatDayShort(day.date) : ""}
               </span>
@@ -91,9 +113,11 @@ export function ClicksBarChart({ daily }: { daily: DailyClicks[] }) {
 function ChartColumn({
   day,
   axisMax,
+  align,
 }: {
   day: DailyClicks;
   axisMax: number;
+  align: TooltipAlign;
 }) {
   const heightPercent = axisMax === 0 ? 0 : (day.clicks / axisMax) * 100;
 
@@ -115,7 +139,10 @@ function ChartColumn({
 
       <div
         role="presentation"
-        className="border-border bg-popover pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 rounded-md border px-2.5 py-1.5 text-center whitespace-nowrap opacity-0 shadow-xs transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+        className={cn(
+          "border-border bg-popover pointer-events-none absolute bottom-full z-10 mb-2 rounded-md border px-2.5 py-1.5 text-center whitespace-nowrap opacity-0 shadow-xs transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100",
+          TOOLTIP_ALIGN[align],
+        )}
       >
         <span className="block text-xs font-medium">
           {formatNumber(day.clicks)}
@@ -123,7 +150,7 @@ function ChartColumn({
             {day.clicks === 1 ? " click" : " clicks"}
           </span>
         </span>
-        <span className="text-muted-foreground block text-[11px]">
+        <span className="text-muted-foreground text-2xs block">
           {formatDate(day.date)}
         </span>
       </div>
