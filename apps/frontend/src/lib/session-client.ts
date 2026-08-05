@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  EXPIRED_SESSION_PARAM,
+  EXPIRED_SESSION_VALUE,
   parseSessionCookie,
   SESSION_COOKIE,
   SESSION_MAX_AGE_SECONDS,
@@ -14,6 +16,13 @@ export function saveSession(session: Session): void {
 
 export function clearSession(): void {
   document.cookie = `${SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
+}
+
+export function expireSession(): void {
+  clearSession();
+  window.location.assign(
+    `/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`,
+  );
 }
 
 export function readSession(): Session | null {

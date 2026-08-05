@@ -44,7 +44,7 @@ const COPY = {
   },
 } as const satisfies Record<Mode, unknown>;
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({ mode, notice }: { mode: Mode; notice?: string }) {
   const router = useRouter();
   const emailId = useId();
   const passwordId = useId();
@@ -93,7 +93,13 @@ export function AuthForm({ mode }: { mode: Mode }) {
           <CardDescription>{copy.description}</CardDescription>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
+          {notice !== undefined ? (
+            <p className="text-muted-foreground border-border bg-muted/40 rounded-md border px-3 py-2.5 text-sm">
+              {notice}
+            </p>
+          ) : null}
+
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor={emailId}>Email</Label>

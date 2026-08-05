@@ -4,8 +4,18 @@ import { redirect } from "next/navigation";
 import { Alert } from "@/components/ui/alert";
 import { LinksPagination } from "@/components/links-pagination";
 import { LinksTable } from "@/components/links-table";
-import { ApiError, LINKS_PAGE_SIZE, listLinks, type LinksPage } from "@/lib/api";
+import {
+  ApiError,
+  isUnauthorized,
+  LINKS_PAGE_SIZE,
+  listLinks,
+  type LinksPage,
+} from "@/lib/api";
 import { toLinkRows } from "@/lib/links";
+import {
+  EXPIRED_SESSION_PARAM,
+  EXPIRED_SESSION_VALUE,
+} from "@/lib/session";
 import { getServerSession } from "@/lib/session-server";
 
 export const metadata: Metadata = {
@@ -32,6 +42,10 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   try {
     data = await listLinks(session.token, page, LINKS_PAGE_SIZE);
   } catch (caught) {
+    if (isUnauthorized(caught)) {
+      redirect(`/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`);
+    }
+
     error =
       caught instanceof ApiError
         ? caught.message

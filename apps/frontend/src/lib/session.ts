@@ -6,6 +6,36 @@ export interface Session {
   email: string;
 }
 
+export const EXPIRED_SESSION_PARAM = "session";
+export const EXPIRED_SESSION_VALUE = "expired";
+
+function decodeTokenExpiry(token: string): number | null {
+  const segment = token.split(".")[1];
+  if (segment === undefined) return null;
+
+  try {
+    const json: unknown = JSON.parse(
+      atob(segment.replace(/-/g, "+").replace(/_/g, "/")),
+    );
+
+    if (
+      typeof json === "object" &&
+      json !== null &&
+      typeof (json as { exp?: unknown }).exp === "number"
+    ) {
+      return (json as { exp: number }).exp;
+    }
+  } catch {
+  }
+
+  return null;
+}
+
+export function isSessionExpired(session: Session): boolean {
+  const exp = decodeTokenExpiry(session.token);
+  return exp === null || exp * 1000 <= Date.now();
+}
+
 export function parseSessionCookie(raw: string | undefined): Session | null {
   if (raw === undefined || raw === "") return null;
 

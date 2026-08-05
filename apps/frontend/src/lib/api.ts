@@ -1,6 +1,6 @@
-import { ApiError, isApiErrorBody } from "@/lib/api-error";
+import { ApiError, isApiErrorBody, isUnauthorized } from "@/lib/api-error";
 
-export { ApiError };
+export { ApiError, isUnauthorized };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 

@@ -14,8 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ApiError, deleteLink, type LinkSummary } from "@/lib/api";
-import { readSession } from "@/lib/session-client";
+import {
+  ApiError,
+  deleteLink,
+  isUnauthorized,
+  type LinkSummary,
+} from "@/lib/api";
+import { expireSession, readSession } from "@/lib/session-client";
 
 interface DeleteLinkDialogProps {
   link: LinkSummary;
@@ -48,6 +53,11 @@ export function DeleteLinkDialog({
       onDeleted(link.id);
       onOpenChange(false);
     } catch (caught) {
+      if (isUnauthorized(caught)) {
+        expireSession();
+        return;
+      }
+
       setError(
         caught instanceof ApiError
           ? caught.message

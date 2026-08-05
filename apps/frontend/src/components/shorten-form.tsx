@@ -8,9 +8,14 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ApiError, createLink, type CreatedLink } from "@/lib/api";
+import {
+  ApiError,
+  createLink,
+  isUnauthorized,
+  type CreatedLink,
+} from "@/lib/api";
 import { SHORT_DOMAIN_LABEL } from "@/lib/config";
-import { readSession } from "@/lib/session-client";
+import { expireSession, readSession } from "@/lib/session-client";
 import { cn } from "@/lib/utils";
 
 export function ShortenForm() {
@@ -32,9 +37,9 @@ export function ShortenForm() {
     setError(null);
     setResult(null);
 
-    try {
-      const session = readSession();
+    const session = readSession();
 
+    try {
       const created = await createLink(
         {
           url: url.trim(),
@@ -52,6 +57,11 @@ export function ShortenForm() {
       setExpiresAt("");
       setOptionsOpen(false);
     } catch (caught) {
+      if (session !== null && isUnauthorized(caught)) {
+        expireSession();
+        return;
+      }
+
       setError(
         caught instanceof ApiError
           ? caught.message

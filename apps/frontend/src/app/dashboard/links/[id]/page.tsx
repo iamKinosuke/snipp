@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import {
   ApiError,
   getLinkStats,
+  isUnauthorized,
   STATS_RANGES,
   type StatsRange,
 } from "@/lib/api";
@@ -21,6 +22,10 @@ import {
   formatDate,
   formatNumber,
 } from "@/lib/format";
+import {
+  EXPIRED_SESSION_PARAM,
+  EXPIRED_SESSION_VALUE,
+} from "@/lib/session";
 import { getServerSession } from "@/lib/session-server";
 import { summarizeRange } from "@/lib/stats";
 
@@ -48,6 +53,9 @@ export default async function LinkAnalyticsPage(
   try {
     stats = await getLinkStats(session.token, id, range);
   } catch (caught) {
+    if (isUnauthorized(caught)) {
+      redirect(`/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`);
+    }
     if (caught instanceof ApiError && caught.status === 404) {
       notFound();
     }
