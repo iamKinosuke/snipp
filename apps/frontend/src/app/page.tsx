@@ -35,7 +35,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <ShortenForm />
+          <ShortenForm isSignedIn={session !== null} />
 
           <div className="flex flex-col gap-8">
             <ul className="text-muted-foreground flex flex-wrap gap-x-6 gap-y-2 text-xs">

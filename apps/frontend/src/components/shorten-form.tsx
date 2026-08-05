@@ -1,8 +1,15 @@
 "use client";
 
-import { ChevronDownIcon, LinkIcon, Loader2Icon } from "lucide-react";
-import { useId, useState } from "react";
+import {
+  ArrowRightIcon,
+  ChevronDownIcon,
+  LinkIcon,
+  Loader2Icon,
+} from "lucide-react";
+import Link from "next/link";
+import { useId, useState, useSyncExternalStore } from "react";
 
+import { RecentLinks } from "@/components/recent-links";
 import { ShortenResult } from "@/components/shorten-result";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -15,10 +22,17 @@ import {
   type CreatedLink,
 } from "@/lib/api";
 import { SHORT_DOMAIN_LABEL } from "@/lib/config";
+import {
+  clearRecentLinks,
+  getRecentLinks,
+  getServerRecentLinks,
+  rememberRecentLink,
+  subscribeRecentLinks,
+} from "@/lib/recent-links";
 import { expireSession, readSession } from "@/lib/session-client";
 import { cn } from "@/lib/utils";
 
-export function ShortenForm() {
+export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
   const aliasId = useId();
   const expiresId = useId();
 
@@ -28,14 +42,19 @@ export function ShortenForm() {
   const [optionsOpen, setOptionsOpen] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<CreatedLink | null>(null);
+  const [latest, setLatest] = useState<CreatedLink | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const recent = useSyncExternalStore(
+    subscribeRecentLinks,
+    getRecentLinks,
+    getServerRecentLinks,
+  );
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setError(null);
-    setResult(null);
 
     const session = readSession();
 
@@ -51,7 +70,12 @@ export function ShortenForm() {
         session?.token,
       );
 
-      setResult(created);
+      if (isSignedIn) {
+        setLatest(created);
+      } else {
+        rememberRecentLink(created);
+      }
+
       setUrl("");
       setAlias("");
       setExpiresAt("");
@@ -160,7 +184,22 @@ export function ShortenForm() {
 
       {error !== null ? <Alert>{error}</Alert> : null}
 
-      {result !== null ? <ShortenResult link={result} /> : null}
+      {isSignedIn ? (
+        latest !== null ? (
+          <div className="flex flex-col gap-2.5">
+            <ShortenResult link={latest} />
+            <Link
+              href="/dashboard"
+              className="text-primary focus-visible:outline-ring group inline-flex w-fit items-center gap-1.5 self-end rounded-sm text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-4"
+            >
+              View all your links in the dashboard
+              <ArrowRightIcon className="size-3.5 transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        ) : null
+      ) : (
+        <RecentLinks links={recent} onClear={clearRecentLinks} />
+      )}
     </div>
   );
 }
