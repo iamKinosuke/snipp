@@ -1,6 +1,14 @@
-import { AppError, badRequest, conflict, gone, notFound } from "../errors/AppError.js";
+import {
+  AppError,
+  badRequest,
+  conflict,
+  gone,
+  notFound,
+  sessionInvalid,
+} from "../errors/AppError.js";
 import {
   DuplicateShortCodeError,
+  UnknownUserError,
   type BreakdownRow,
   type DailyClickRow,
   type LinkRecord,
@@ -154,6 +162,9 @@ export function createLinkService(deps: LinkServiceDeps): LinkService {
               `The alias "${aliasResult.alias}" is already taken. Try another one.`,
             );
           }
+          if (error instanceof UnknownUserError) {
+            throw sessionInvalid();
+          }
           throw error;
         }
       }
@@ -170,6 +181,9 @@ export function createLinkService(deps: LinkServiceDeps): LinkService {
         } catch (error) {
           if (error instanceof DuplicateShortCodeError) {
             continue;
+          }
+          if (error instanceof UnknownUserError) {
+            throw sessionInvalid();
           }
           throw error;
         }

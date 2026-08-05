@@ -33,6 +33,10 @@ export const unauthorized = (
   message = "You need to sign in to do that.",
 ): AppError => new AppError(401, "UNAUTHORIZED", message);
 
+export const sessionInvalid = (
+  message = "Your session is no longer valid. Please sign in again.",
+): AppError => new AppError(401, "SESSION_INVALID", message);
+
 export const forbidden = (
   message = "You do not have access to this resource.",
 ): AppError => new AppError(403, "FORBIDDEN", message);

@@ -1,10 +1,16 @@
 import type { RequestHandler } from "express";
-import { unauthorized } from "../errors/AppError.js";
+import { sessionInvalid, unauthorized } from "../errors/AppError.js";
+import type { UserRepository } from "../repositories/user.repository.js";
 import { verifyToken } from "../utils/jwt.js";
 
 export interface AuthenticatedUser {
   id: number;
   email: string;
+}
+
+export interface AuthDeps {
+  secret: string;
+  users: Pick<UserRepository, "existsById">;
 }
 
 declare global {
@@ -39,12 +45,17 @@ function resolveUser(header: string | undefined, secret: string): AuthenticatedU
   return { id, email: payload.email };
 }
 
-export function requireAuth(secret: string): RequestHandler {
-  return (req, _res, next) => {
-    const user = resolveUser(req.headers.authorization, secret);
+export function requireAuth(deps: AuthDeps): RequestHandler {
+  return async (req, _res, next) => {
+    const user = resolveUser(req.headers.authorization, deps.secret);
 
     if (user === null) {
       next(unauthorized("You need to sign in to do that."));
+      return;
+    }
+
+    if (!(await deps.users.existsById(user.id))) {
+      next(sessionInvalid());
       return;
     }
 
@@ -53,12 +64,21 @@ export function requireAuth(secret: string): RequestHandler {
   };
 }
 
-export function optionalAuth(secret: string): RequestHandler {
-  return (req, _res, next) => {
-    const user = resolveUser(req.headers.authorization, secret);
-    if (user !== null) {
-      req.user = user;
+export function optionalAuth(deps: AuthDeps): RequestHandler {
+  return async (req, _res, next) => {
+    const user = resolveUser(req.headers.authorization, deps.secret);
+
+    if (user === null) {
+      next();
+      return;
     }
+
+    if (!(await deps.users.existsById(user.id))) {
+      next(sessionInvalid());
+      return;
+    }
+
+    req.user = user;
     next();
   };
 }

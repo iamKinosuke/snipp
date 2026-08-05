@@ -17,6 +17,7 @@ export class DuplicateEmailError extends Error {
 export interface UserRepository {
   create(data: { email: string; passwordHash: string }): Promise<UserRecord>;
   findByEmail(email: string): Promise<UserRecord | null>;
+  existsById(id: number): Promise<boolean>;
 }
 
 function isUniqueViolation(error: unknown): boolean {
@@ -41,6 +42,14 @@ export function createUserRepository(client: PrismaClient): UserRepository {
 
     async findByEmail(email) {
       return await client.user.findUnique({ where: { email } });
+    },
+
+    async existsById(id) {
+      const row = await client.user.findUnique({
+        where: { id },
+        select: { id: true },
+      });
+      return row !== null;
     },
   };
 }

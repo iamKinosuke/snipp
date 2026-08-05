@@ -42,6 +42,7 @@ export function createApp(deps: CreateAppDeps = {}): Express {
   app.use(express.json({ limit: "10kb" }));
 
   const linkRepository = createLinkRepository(prisma);
+  const userRepository = createUserRepository(prisma);
 
   const cache =
     deps.redis !== undefined && env.CACHE_ENABLED
@@ -70,7 +71,7 @@ export function createApp(deps: CreateAppDeps = {}): Express {
   const linkController = createLinkController({ service: linkService });
 
   const authService = createAuthService({
-    repository: createUserRepository(prisma),
+    repository: userRepository,
     jwt: { secret: env.JWT_SECRET, expiresIn: env.JWT_EXPIRES_IN },
   });
   const authController = createAuthController({ service: authService });
@@ -118,8 +119,14 @@ export function createApp(deps: CreateAppDeps = {}): Express {
     "/api/links",
     createLinkRouter({
       controller: linkController,
-      optionalAuth: optionalAuth(env.JWT_SECRET),
-      requireAuth: requireAuth(env.JWT_SECRET),
+      optionalAuth: optionalAuth({
+        secret: env.JWT_SECRET,
+        users: userRepository,
+      }),
+      requireAuth: requireAuth({
+        secret: env.JWT_SECRET,
+        users: userRepository,
+      }),
       createRateLimit: limiter({
         limit: env.RATE_LIMIT_CREATE_MAX,
         windowMs: env.RATE_LIMIT_CREATE_WINDOW_MS,
