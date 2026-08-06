@@ -1,23 +1,12 @@
-"use client";
-
-import { LogOutIcon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { Brand } from "@/components/brand";
+import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { clearSession } from "@/lib/session-client";
 
 export function DashboardHeader({ email }: { email: string }) {
-  const router = useRouter();
-
-  function handleSignOut() {
-    clearSession();
-    router.replace("/");
-    router.refresh();
-  }
-
   return (
     <header className="border-border/80 border-b">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-6">
@@ -40,16 +29,7 @@ export function DashboardHeader({ email }: { email: string }) {
 
           <ThemeToggle />
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSignOut}
-            aria-label="Sign out"
-            title="Sign out"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <LogOutIcon />
-          </Button>
+          <SignOutButton />
         </div>
       </div>
     </header>

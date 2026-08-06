@@ -1,7 +1,10 @@
+import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { LinksPagination } from "@/components/links-pagination";
 import { LinksTable } from "@/components/links-table";
 import {
@@ -60,13 +63,22 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10 sm:py-14">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-semibold">Your links</h1>
-        <p className="text-muted-foreground text-sm">
-          {data === null
-            ? "Every link you have created, with its click count."
-            : `${data.total} ${data.total === 1 ? "link" : "links"}, newest first.`}
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl font-semibold">Your links</h1>
+          <p className="text-muted-foreground text-sm">
+            {data === null
+              ? "Every link you have created, with its click count."
+              : `${data.total} ${data.total === 1 ? "link" : "links"}, newest first.`}
+          </p>
+        </div>
+
+        <Button variant="primary" size="md" asChild className="w-fit shrink-0">
+          <Link href="/">
+            <PlusIcon />
+            New link
+          </Link>
+        </Button>
       </div>
 
       {error !== null ? <Alert>{error}</Alert> : null}

@@ -47,7 +47,7 @@ function DeltaLine({ percent, versus }: { percent: number; versus: string }) {
 
   return (
     <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs">
-      <Icon className="size-3" />
+      <Icon className="size-3.5" />
       <span className="tabular-nums">{Math.abs(rounded)}%</span>
       <span>{versus}</span>
     </span>

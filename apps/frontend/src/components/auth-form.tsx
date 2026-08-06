@@ -109,7 +109,7 @@ export function AuthForm({ mode, notice }: { mode: Mode; notice?: string }) {
                 inputMode="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
+                placeholder="Enter Email Address"
                 required
                 autoComplete="email"
                 autoFocus
@@ -123,7 +123,7 @@ export function AuthForm({ mode, notice }: { mode: Mode; notice?: string }) {
                 id={passwordId}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter Password"
                 required
                 minLength={mode === "signup" ? MIN_PASSWORD_LENGTH : undefined}
                 autoComplete={

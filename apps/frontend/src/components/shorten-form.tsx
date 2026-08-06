@@ -115,7 +115,7 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
               inputMode="url"
               value={url}
               onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://example.com/a-very-long-path"
+              placeholder="Paste long URL here"
               required
               autoComplete="off"
               aria-label="URL to shorten"
@@ -149,7 +149,7 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
         >
           <ChevronDownIcon
             className={cn(
-              "size-3.5 transition-transform duration-150 ease-out",
+              "size-4 transition-transform duration-150 ease-out",
               optionsOpen && "rotate-180",
             )}
           />
@@ -160,10 +160,14 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
           <div className="border-border animate-in fade-in-0 slide-in-from-top-1 grid gap-4 rounded-lg border p-4 duration-150 ease-out sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor={aliasId}>Custom alias</Label>
-              <div className="focus-within:border-ring focus-within:outline-ring/40 border-input flex h-10 items-center rounded-md border transition-[color,border-color] duration-150 focus-within:outline-2">
-                <span className="text-muted-foreground shrink-0 pl-3 font-mono text-xs">
+              <div className="focus-within:border-ring focus-within:outline-ring/40 border-input flex h-10 cursor-text items-center rounded-md border transition-[color,border-color] duration-150 focus-within:outline-2">
+                <label
+                  htmlFor={aliasId}
+                  aria-hidden
+                  className="text-muted-foreground shrink-0 cursor-text pl-3 font-mono text-xs select-none"
+                >
                   {SHORT_DOMAIN_LABEL}/
-                </span>
+                </label>
                 <Input
                   id={aliasId}
                   value={alias}
@@ -201,7 +205,7 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
               className="text-primary focus-visible:outline-ring group inline-flex w-fit items-center gap-1.5 self-end rounded-sm text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-4"
             >
               View all your links in the dashboard
-              <ArrowRightIcon className="size-3.5 transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+              <ArrowRightIcon className="size-4 transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
             </Link>
           </div>
         ) : null

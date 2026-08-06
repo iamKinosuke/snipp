@@ -34,7 +34,7 @@ export function ShortenResult({
             className="group text-foreground focus-visible:outline-ring inline-flex min-w-0 items-center gap-1.5 rounded-sm font-mono text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-4"
           >
             <span className="truncate">{link.shortUrl}</span>
-            <ArrowUpRightIcon className="text-muted-foreground group-hover:text-primary size-3.5 shrink-0 transition-colors duration-150" />
+            <ArrowUpRightIcon className="text-muted-foreground group-hover:text-primary size-4 shrink-0 transition-colors duration-150" />
           </a>
           <p className="text-muted-foreground truncate text-xs">
             {link.targetUrl}
@@ -57,14 +57,14 @@ export function ShortenResult({
 
       {reused ? (
         <div className="border-border text-muted-foreground flex items-center gap-1.5 border-t px-5 py-2.5 text-xs">
-          <HistoryIcon className="size-3.5 shrink-0" />
+          <HistoryIcon className="size-4 shrink-0" />
           You had already shortened this URL — here is the same short link.
         </div>
       ) : null}
 
       {link.expiresAt !== null ? (
         <div className="border-border text-muted-foreground flex items-center gap-1.5 border-t px-5 py-2.5 text-xs">
-          <ClockIcon className="size-3.5" />
+          <ClockIcon className="size-4" />
           Expires {formatDateTime(link.expiresAt)}
         </div>
       ) : null}

@@ -41,7 +41,7 @@ export default async function Home() {
             <ul className="text-muted-foreground flex flex-wrap gap-x-6 gap-y-2 text-xs">
               {FEATURES.map(({ icon: Icon, label }) => (
                 <li key={label} className="flex items-center gap-1.5">
-                  <Icon className="size-3.5" />
+                  <Icon className="size-4" />
                   {label}
                 </li>
               ))}
@@ -69,7 +69,7 @@ export default async function Home() {
                 className="text-primary focus-visible:outline-ring group inline-flex shrink-0 items-center gap-1.5 rounded-sm text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-4"
               >
                 {session === null ? "Create account" : "Go to dashboard"}
-                <ArrowRightIcon className="size-3.5 transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+                <ArrowRightIcon className="size-4 transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
               </Link>
             </div>
           </div>

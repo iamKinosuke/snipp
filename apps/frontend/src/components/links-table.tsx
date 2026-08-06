@@ -78,7 +78,7 @@ function LinkTableRow({
             className="group focus-visible:outline-ring inline-flex min-w-0 items-center gap-1.5 rounded-sm font-mono text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-4"
           >
             <span className="truncate">{link.shortCode}</span>
-            <ArrowUpRightIcon className="text-muted-foreground group-hover:text-primary size-3.5 shrink-0 transition-colors duration-150" />
+            <ArrowUpRightIcon className="text-muted-foreground group-hover:text-primary size-4 shrink-0 transition-colors duration-150" />
           </a>
           {isExpired ? (
             <span className="text-muted-foreground border-border shrink-0 rounded-sm border px-1.5 py-0.5 text-2xs font-medium tracking-wide uppercase">

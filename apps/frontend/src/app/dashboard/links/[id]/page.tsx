@@ -100,7 +100,7 @@ export default async function LinkAnalyticsPage(
               className="text-muted-foreground hover:text-foreground focus-visible:outline-ring group inline-flex min-w-0 items-center gap-1.5 rounded-sm text-sm transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-4"
             >
               <span className="truncate">{link.targetUrl}</span>
-              <ArrowUpRightIcon className="size-3.5 shrink-0" />
+              <ArrowUpRightIcon className="size-4 shrink-0" />
             </a>
 
             <p className="text-muted-foreground text-xs">
