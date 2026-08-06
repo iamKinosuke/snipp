@@ -187,7 +187,7 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
                 type="datetime-local"
                 value={expiresAt}
                 onChange={(event) => setExpiresAt(event.target.value)}
-                className="text-xs"
+                className="focus:border-ring focus:outline-ring/40 pr-10 text-xs focus:outline-2"
               />
             </div>
           </div>
