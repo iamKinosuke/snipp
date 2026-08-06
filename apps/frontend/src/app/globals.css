@@ -124,6 +124,10 @@
     @apply border-border;
   }
 
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "cv11", "ss01";

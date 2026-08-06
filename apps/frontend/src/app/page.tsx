@@ -19,7 +19,7 @@ export default async function Home() {
     <>
       <SiteHeader email={session?.email} />
 
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-6 py-16 sm:py-24">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-6 py-12 sm:py-16">
         <div className="flex flex-col gap-10">
           <div className="flex flex-col gap-3">
             <h1 className="text-4xl font-semibold sm:text-5xl">
@@ -28,10 +28,10 @@ export default async function Home() {
               <span className="text-muted-foreground">measurable clicks.</span>
             </h1>
             <p className="text-muted-foreground max-w-md text-base leading-relaxed">
-              Paste a long URL and get a short one you can use right away.{" "}
+              Paste a long URL, get a short one back.{" "}
               {session === null
                 ? "No account needed."
-                : "Links you create are saved to your account."}
+                : "Links are saved to your account."}
             </p>
           </div>
 
