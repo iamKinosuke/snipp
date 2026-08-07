@@ -164,7 +164,7 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
                 <label
                   htmlFor={aliasId}
                   aria-hidden
-                  className="text-muted-foreground shrink-0 cursor-text pl-3 font-mono text-xs select-none"
+                  className="text-muted-foreground flex h-full shrink-0 cursor-text items-center pl-3 font-mono text-xs select-none"
                 >
                   {SHORT_DOMAIN_LABEL}/
                 </label>
