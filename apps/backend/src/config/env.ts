@@ -13,7 +13,7 @@ const envSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
 
-  PORT: z.coerce.number().int().min(1).max(65535).default(3068),
+  PORT: z.coerce.number().int().min(1).max(65535).default(3366),
 
   DATABASE_URL: z
     .string()
@@ -35,8 +35,6 @@ const envSchema = z.object({
   CACHE_ENABLED: booleanFromEnv(true),
 
   CLICK_BUFFER_ENABLED: booleanFromEnv(true),
-
-  CLICK_FLUSH_ENABLED: booleanFromEnv(true),
 
   CLICK_FLUSH_INTERVAL_MS: z.coerce.number().int().min(1_000).default(10_000),
 

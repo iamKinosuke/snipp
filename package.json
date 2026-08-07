@@ -11,12 +11,18 @@
     "node": ">=22.11.0"
   },
   "scripts": {
-    "dev": "concurrently -n api,web -c blue,magenta \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev": "concurrently -n api,worker,web -c blue,yellow,magenta \"npm:dev:backend\" \"npm:dev:worker\" \"npm:dev:frontend\"",
     "dev:backend": "npm run dev --workspace=@snipp/backend",
+    "dev:worker": "npm run dev:worker --workspace=@snipp/backend",
     "dev:frontend": "npm run dev --workspace=@snipp/frontend",
     "build": "npm run build --workspace=@snipp/backend && npm run build --workspace=@snipp/frontend",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "prisma:generate": "npm run prisma --workspace=@snipp/backend -- generate",
+    "prisma:deploy": "npm run prisma --workspace=@snipp/backend -- migrate deploy",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:reload": "pm2 reload ecosystem.config.cjs --update-env",
+    "pm2:logs": "pm2 logs --lines 100"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

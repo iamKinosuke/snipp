@@ -23,11 +23,9 @@ import { createClickBuffer } from "./services/click.buffer.js";
 import { createLinkCache, createNoopLinkCache } from "./services/link.cache.js";
 import { createLinkService } from "./services/link.service.js";
 import type { RedisService } from "./services/redis.service.js";
-import type { ClickFlusher } from "./workers/click.flush.js";
 
 export interface CreateAppDeps {
   redis?: RedisService;
-  clickFlusher?: ClickFlusher;
 }
 
 export function createApp(deps: CreateAppDeps = {}): Express {
@@ -99,7 +97,6 @@ export function createApp(deps: CreateAppDeps = {}): Express {
       redis: redis?.isReady() === true ? "ready" : "unavailable",
       cache: env.CACHE_ENABLED ? cache.metrics() : "disabled",
       clickPath: clickBuffer !== undefined ? "redis" : "mysql",
-      clickFlush: deps.clickFlusher?.stats() ?? "disabled",
       ...linkController.metrics(),
     });
   });

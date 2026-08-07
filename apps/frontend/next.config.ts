@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const BACKEND_ORIGIN = process.env.BACKEND_ORIGIN ?? "http://localhost:3068";
+const BACKEND_ORIGIN = process.env.BACKEND_ORIGIN ?? "http://localhost:3366";
 
 const isProduction = process.env.NODE_ENV === "production";
 

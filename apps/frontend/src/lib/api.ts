@@ -2,7 +2,13 @@ import { ApiError, isApiErrorBody, isUnauthorized } from "@/lib/api-error";
 
 export { ApiError, isUnauthorized };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const PUBLIC_API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3366";
+
+const API_URL =
+  typeof window === "undefined"
+    ? process.env.INTERNAL_API_URL || PUBLIC_API_URL
+    : PUBLIC_API_URL;
 
 export interface CreatedLink {
   shortCode: string;
