@@ -56,6 +56,7 @@ export interface ClickFlusherDeps {
   repository: LinkRepository;
   intervalMs?: number;
   logger?: Pick<Console, "log" | "warn" | "error">;
+  logEachFlush?: boolean;
 }
 
 function emptyOutcome(): FlushOutcome {
@@ -128,6 +129,7 @@ function parseClick(raw: string): BufferedClickRow | null {
 export function createClickFlusher(deps: ClickFlusherDeps): ClickFlusher {
   const logger = deps.logger ?? console;
   const intervalMs = deps.intervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
+  const logEachFlush = deps.logEachFlush ?? true;
 
   let timer: NodeJS.Timeout | null = null;
   let inFlight: Promise<FlushOutcome> | null = null;
@@ -308,15 +310,22 @@ export function createClickFlusher(deps: ClickFlusherDeps): ClickFlusher {
         void flushOnce().then((outcome) => {
           if (isEmpty(outcome)) return;
 
+          const lost =
+            outcome.dropped > 0 || outcome.malformed > 0
+              ? `${String(outcome.dropped)} dropped (deleted links) · ` +
+                `${String(outcome.malformed)} malformed`
+              : null;
+
+          if (lost !== null) {
+            logger.warn(`[snipp][flush] ${lost}`);
+            return;
+          }
+
+          if (!logEachFlush) return;
+
           logger.log(
             `[snipp][flush] ${String(outcome.clicks)} clicks · ` +
-              `${String(outcome.counters)} links` +
-              (outcome.dropped > 0
-                ? ` · ${String(outcome.dropped)} dropped (deleted links)`
-                : "") +
-              (outcome.malformed > 0
-                ? ` · ${String(outcome.malformed)} malformed`
-                : ""),
+              `${String(outcome.counters)} links`,
           );
         });
       }, intervalMs);

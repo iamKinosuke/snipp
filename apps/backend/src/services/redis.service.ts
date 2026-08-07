@@ -25,7 +25,7 @@ export interface RedisService {
 
 export interface RedisServiceDeps {
   url: string;
-  logger?: Pick<Console, "warn" | "error">;
+  logger?: Pick<Console, "log" | "warn" | "error">;
   logIntervalMs?: number;
 }
 
@@ -60,9 +60,18 @@ export function createRedisService(deps: RedisServiceDeps): RedisService {
     logThrottled("connection", "connection error (still serving, falling back to MySQL):", error);
   });
 
+  let everReady = false;
+
   client.on("ready", () => {
-    lastLoggedAt.delete("connection");
-    console.log("[snipp][redis] ready");
+    const recovered = lastLoggedAt.delete("connection");
+
+    if (!everReady) {
+      everReady = true;
+      logger.log("[snipp][redis] ready");
+      return;
+    }
+
+    if (recovered) logger.warn("[snipp][redis] reconnected after an outage");
   });
 
   function isReady(): boolean {

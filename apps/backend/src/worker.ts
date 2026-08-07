@@ -1,4 +1,4 @@
-import { env } from "./config/env.js";
+import { env, isProduction } from "./config/env.js";
 import { disconnectPrisma, prisma } from "./db/prisma.js";
 import { createLinkRepository } from "./repositories/link.repository.js";
 import { createRedisService } from "./services/redis.service.js";
@@ -20,6 +20,7 @@ const flusher = createClickFlusher({
   redis,
   repository: createLinkRepository(prisma),
   intervalMs: env.CLICK_FLUSH_INTERVAL_MS,
+  logEachFlush: !isProduction,
 });
 
 const keepAlive = setInterval(() => undefined, 1 << 30);
@@ -27,7 +28,8 @@ const keepAlive = setInterval(() => undefined, 1 << 30);
 flusher.start();
 
 console.log(
-  `[snipp][worker] click flush every ${String(env.CLICK_FLUSH_INTERVAL_MS)}ms (${env.NODE_ENV})`,
+  `[snipp][worker] click flush every ${String(env.CLICK_FLUSH_INTERVAL_MS)}ms (${env.NODE_ENV})` +
+    (isProduction ? " — only failures are logged" : ""),
 );
 
 const SHUTDOWN_TIMEOUT_MS = 15_000;
