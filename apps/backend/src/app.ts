@@ -139,7 +139,12 @@ export function createApp(deps: CreateAppDeps = {}): Express {
   app.use(createRedirectRouter(linkController));
 
   app.use(notFoundHandler);
-  app.use(createErrorHandler({ includeDebugDetails: !isProduction }));
+  app.use(
+    createErrorHandler({
+      includeDebugDetails: !isProduction,
+      homeUrl: env.FRONTEND_ORIGIN,
+    }),
+  );
 
   return app;
 }
