@@ -13,7 +13,7 @@ const envSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
 
-  PORT: z.coerce.number().int().min(1).max(65535).default(4000),
+  PORT: z.coerce.number().int().min(1).max(65535).default(3068),
 
   DATABASE_URL: z
     .string()
@@ -24,7 +24,7 @@ const envSchema = z.object({
 
   FRONTEND_ORIGIN: z.url().default("http://localhost:3000"),
 
-  SHORT_DOMAIN: z.url().default("http://localhost:4000"),
+  SHORT_DOMAIN: z.url().default("http://localhost:3000"),
 
   JWT_SECRET: z
     .string()

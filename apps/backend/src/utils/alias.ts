@@ -7,6 +7,8 @@ const ALIAS_PATTERN = /^[0-9a-zA-Z_-]+$/;
 
 export const RESERVED_CODES: ReadonlySet<string> = new Set([
   "api",
+  "app",
+  "_next",
   "health",
   "dashboard",
   "login",
