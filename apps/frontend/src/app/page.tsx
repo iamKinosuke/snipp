@@ -65,7 +65,7 @@ export default async function Home() {
                 )}
               </p>
               <Link
-                href={session === null ? "/signup" : "/dashboard"}
+                href={session === null ? "/app/signup" : "/app"}
                 className="text-primary focus-visible:outline-ring group inline-flex shrink-0 items-center gap-1.5 rounded-sm text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-4"
               >
                 {session === null ? "Create account" : "Go to dashboard"}

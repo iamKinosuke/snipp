@@ -31,7 +31,7 @@ const COPY = {
     submitting: "Signing in",
     switchPrompt: "No account yet?",
     switchLabel: "Create one",
-    switchHref: "/signup",
+    switchHref: "/app/signup",
   },
   signup: {
     title: "Create account",
@@ -40,7 +40,7 @@ const COPY = {
     submitting: "Creating account",
     switchPrompt: "Already have an account?",
     switchLabel: "Sign in",
-    switchHref: "/login",
+    switchHref: "/app/login",
   },
 } as const satisfies Record<Mode, unknown>;
 
@@ -68,7 +68,7 @@ export function AuthForm({ mode, notice }: { mode: Mode; notice?: string }) {
           : await login(credentials);
 
       saveSession({ token: session.token, email: session.user.email });
-      router.replace("/dashboard");
+      router.replace("/app");
       router.refresh();
     } catch (caught) {
       setError(

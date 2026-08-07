@@ -23,12 +23,12 @@ export function SiteHeader({ email }: { email?: string }) {
 
           <Button variant="ghost" size="sm" asChild>
             {email !== undefined ? (
-              <Link href="/dashboard">
+              <Link href="/app">
                 <LayoutDashboardIcon />
                 Dashboard
               </Link>
             ) : (
-              <Link href="/login">Sign in</Link>
+              <Link href="/app/login">Sign in</Link>
             )}
           </Button>
 

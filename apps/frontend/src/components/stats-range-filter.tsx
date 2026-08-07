@@ -21,7 +21,7 @@ export function StatsRangeFilter({
         return (
           <Link
             key={range}
-            href={`/dashboard/links/${linkId}?range=${range}`}
+            href={`/app/links/${linkId}?range=${range}`}
             scroll={false}
             aria-current={isActive ? "page" : undefined}
             className={cn(

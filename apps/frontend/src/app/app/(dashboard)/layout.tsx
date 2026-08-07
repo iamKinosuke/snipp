@@ -6,11 +6,11 @@ import { getServerSession } from "@/lib/session-server";
 
 export default async function DashboardLayout({
   children,
-}: LayoutProps<"/dashboard">) {
+}: LayoutProps<"/app">) {
   const session = await getServerSession();
 
   if (session === null) {
-    redirect("/login");
+    redirect("/app/login");
   }
 
   return (

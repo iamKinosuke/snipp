@@ -201,7 +201,7 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
           <div className="flex flex-col gap-2.5">
             <ShortenResult link={latest} reused={latest.reused} />
             <Link
-              href="/dashboard"
+              href="/app"
               className="text-primary focus-visible:outline-ring group inline-flex w-fit items-center gap-1.5 self-end rounded-sm text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-4"
             >
               View all your links in the dashboard

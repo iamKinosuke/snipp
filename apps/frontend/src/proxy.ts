@@ -8,41 +8,46 @@ import {
   SESSION_COOKIE,
 } from "@/lib/session";
 
+const PUBLIC_APP_PATHS: ReadonlySet<string> = new Set([
+  "/app/login",
+  "/app/signup",
+]);
+
 export const proxy: NextProxy = (request) => {
   const raw = request.cookies.get(SESSION_COOKIE)?.value;
 
-  if (request.nextUrl.pathname.startsWith("/dashboard")) {
-    const session = parseSessionCookie(raw);
+  if (PUBLIC_APP_PATHS.has(request.nextUrl.pathname)) {
+    const response = NextResponse.next();
 
-    if (session !== null && !isSessionExpired(session)) {
-      return NextResponse.next();
+    if (
+      raw !== undefined &&
+      request.nextUrl.searchParams.get(EXPIRED_SESSION_PARAM) ===
+        EXPIRED_SESSION_VALUE
+    ) {
+      response.cookies.delete(SESSION_COOKIE);
     }
 
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.search = "";
-    if (raw !== undefined) {
-      url.searchParams.set(EXPIRED_SESSION_PARAM, EXPIRED_SESSION_VALUE);
-    }
-
-    const response = NextResponse.redirect(url);
-    response.cookies.delete(SESSION_COOKIE);
     return response;
   }
 
-  const response = NextResponse.next();
+  const session = parseSessionCookie(raw);
 
-  if (
-    raw !== undefined &&
-    request.nextUrl.searchParams.get(EXPIRED_SESSION_PARAM) ===
-      EXPIRED_SESSION_VALUE
-  ) {
-    response.cookies.delete(SESSION_COOKIE);
+  if (session !== null && !isSessionExpired(session)) {
+    return NextResponse.next();
   }
 
+  const url = request.nextUrl.clone();
+  url.pathname = "/app/login";
+  url.search = "";
+  if (raw !== undefined) {
+    url.searchParams.set(EXPIRED_SESSION_PARAM, EXPIRED_SESSION_VALUE);
+  }
+
+  const response = NextResponse.redirect(url);
+  response.cookies.delete(SESSION_COOKIE);
   return response;
 };
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup"],
+  matcher: ["/app", "/app/:path*"],
 };

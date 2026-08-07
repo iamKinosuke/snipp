@@ -124,7 +124,7 @@ function LinkTableRow({
             className="text-muted-foreground hover:text-foreground"
           >
             <Link
-              href={`/dashboard/links/${link.id}`}
+              href={`/app/links/${link.id}`}
               aria-label="View analytics"
               title="View analytics"
             >

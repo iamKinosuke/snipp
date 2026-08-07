@@ -62,7 +62,7 @@ export function LinkDetailActions({ link }: { link: LinkSummary }) {
         link={link}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        onDeleted={() => router.replace("/dashboard")}
+        onDeleted={() => router.replace("/app")}
       />
     </div>
   );

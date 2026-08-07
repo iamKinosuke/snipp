@@ -30,11 +30,11 @@ function parsePage(raw: string | string[] | undefined): number {
   return Number.isInteger(value) && value >= 1 ? value : 1;
 }
 
-export default async function DashboardPage(props: PageProps<"/dashboard">) {
+export default async function DashboardPage(props: PageProps<"/app">) {
   const session = await getServerSession();
 
   if (session === null) {
-    redirect("/login");
+    redirect("/app/login");
   }
 
   const page = parsePage((await props.searchParams).page);
@@ -46,7 +46,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     data = await listLinks(session.token, page, LINKS_PAGE_SIZE);
   } catch (caught) {
     if (isUnauthorized(caught)) {
-      redirect(`/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`);
+      redirect(`/app/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`);
     }
 
     error =
@@ -56,7 +56,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   }
 
   if (data !== null && data.total > 0 && data.items.length === 0 && page > 1) {
-    redirect("/dashboard");
+    redirect("/app");
   }
 
   const rows = toLinkRows(data?.items ?? []);

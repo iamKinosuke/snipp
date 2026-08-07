@@ -21,7 +21,7 @@ export function clearSession(): void {
 export function expireSession(): void {
   clearSession();
   window.location.assign(
-    `/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`,
+    `/app/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`,
   );
 }
 

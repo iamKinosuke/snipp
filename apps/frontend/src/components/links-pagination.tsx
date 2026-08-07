@@ -60,7 +60,7 @@ function PageLink({
   return (
     <Button variant="outline" size="icon-sm" asChild>
       <Link
-        href={{ pathname: "/dashboard", query: { page } }}
+        href={{ pathname: "/app", query: { page } }}
         aria-label={label}
       >
         <Icon />

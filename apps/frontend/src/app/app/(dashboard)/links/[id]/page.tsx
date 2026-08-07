@@ -39,11 +39,11 @@ function parseRange(raw: string | string[] | undefined): StatsRange {
 }
 
 export default async function LinkAnalyticsPage(
-  props: PageProps<"/dashboard/links/[id]">,
+  props: PageProps<"/app/links/[id]">,
 ) {
   const session = await getServerSession();
   if (session === null) {
-    redirect("/login");
+    redirect("/app/login");
   }
 
   const { id } = await props.params;
@@ -54,7 +54,7 @@ export default async function LinkAnalyticsPage(
     stats = await getLinkStats(session.token, id, range);
   } catch (caught) {
     if (isUnauthorized(caught)) {
-      redirect(`/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`);
+      redirect(`/app/login?${EXPIRED_SESSION_PARAM}=${EXPIRED_SESSION_VALUE}`);
     }
     if (caught instanceof ApiError && caught.status === 404) {
       notFound();
@@ -73,7 +73,7 @@ export default async function LinkAnalyticsPage(
         asChild
         className="text-muted-foreground hover:text-foreground -ml-3 w-fit"
       >
-        <Link href="/dashboard">
+        <Link href="/app">
           <ArrowLeftIcon />
           Back to links
         </Link>
