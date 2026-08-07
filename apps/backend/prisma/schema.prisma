@@ -54,7 +54,6 @@ model Click {
   device   String? @db.VarChar(32)
   browser  String? @db.VarChar(32)
   referrer String? @db.VarChar(255)
-  country  String? @db.Char(2)
 
   link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
 

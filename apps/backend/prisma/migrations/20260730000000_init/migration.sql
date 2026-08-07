@@ -33,7 +33,6 @@ CREATE TABLE `clicks` (
     `device` VARCHAR(32) NULL,
     `browser` VARCHAR(32) NULL,
     `referrer` VARCHAR(255) NULL,
-    `country` CHAR(2) NULL,
 
     INDEX `clicks_link_id_created_at_idx`(`link_id`, `created_at`),
     PRIMARY KEY (`id`)
