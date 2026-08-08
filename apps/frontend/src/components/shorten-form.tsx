@@ -157,8 +157,8 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
         </button>
 
         {optionsOpen ? (
-          <div className="border-border animate-in fade-in-0 slide-in-from-top-1 grid gap-4 rounded-lg border p-4 duration-150 ease-out sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
+          <div className="border-border animate-in fade-in-0 slide-in-from-top-1 grid gap-4 rounded-lg border p-4 duration-150 ease-out sm:grid-cols-5">
+            <div className="flex flex-col gap-1.5 sm:col-span-3">
               <Label htmlFor={aliasId}>Custom alias</Label>
               <div className="focus-within:border-ring focus-within:outline-ring/40 border-input flex h-10 cursor-text items-center rounded-md border transition-[color,border-color] duration-150 focus-within:outline-2">
                 <label
@@ -180,7 +180,7 @@ export function ShortenForm({ isSignedIn }: { isSignedIn: boolean }) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 sm:col-span-2">
               <Label htmlFor={expiresId}>Expires at</Label>
               <Input
                 id={expiresId}
